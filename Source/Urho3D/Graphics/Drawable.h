@@ -300,6 +300,9 @@ public:
     /// Return octree octant.
     Octant* GetOctant() const { return octant_; }
 
+    /// Return index in octree.
+    unsigned GetDrawableIndex() const { return drawableIndex_; }
+
     /// Return current zone.
     /// @property
     Zone* GetZone() const { return zone_; }
@@ -378,6 +381,8 @@ protected:
 
     /// Move into another octree octant.
     void SetOctant(Octant* octant) { octant_ = octant; }
+    /// Update drawable index.
+    void SetDrawableIndex(unsigned drawableIndex) { drawableIndex_ = drawableIndex; };
 
     /// World-space bounding box.
     BoundingBox worldBoundingBox_;
@@ -401,6 +406,8 @@ protected:
     bool zoneDirty_;
     /// Octree octant.
     Octant* octant_;
+    /// Index of Drawable in Scene. May be updated.
+    unsigned drawableIndex_{ M_MAX_UNSIGNED };
     /// Current zone.
     Zone* zone_;
     /// View mask.
