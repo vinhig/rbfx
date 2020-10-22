@@ -436,10 +436,10 @@ void Input::Update()
 
     SDL_Event evt;
     while (SDL_PollEvent(&evt))
-        HandleSDLEvent(&evt);
-
-    if (!enabled_)
-        return;
+    {
+        if (!HandleSDLEvent(&evt))
+            return;
+    }
 
     if (suppressNextMouseMove_ && (mouseMove_ != IntVector2::ZERO || mouseMoved))
         UnsuppressMouseMove();
@@ -1891,7 +1891,7 @@ void Input::UnsuppressMouseMove()
     lastMousePosition_ = GetMousePosition();
 }
 
-void Input::HandleSDLEvent(void* sdlEvent)
+bool Input::HandleSDLEvent(void* sdlEvent)
 {
     SDL_Event& evt = *static_cast<SDL_Event*>(sdlEvent);
 
@@ -1902,53 +1902,13 @@ void Input::HandleSDLEvent(void* sdlEvent)
         VariantMap eventData = GetEventDataMap();
         eventData[P_SDLEVENT] = &evt;
         eventData[P_CONSUMED] = false;
-        SendEvent(E_SDLRAWINPUT, eventData);
 
-        if (eventData[P_CONSUMED].GetBool())
-            return;
-    }
-
-    if (!enabled_)
-    {
-        switch (evt.type)
+        for (int layer = 0; layer < IL_MAX; layer++)
         {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-        case SDL_TEXTEDITING:
-        case SDL_TEXTINPUT:
-        case SDL_KEYMAPCHANGED:
-        case SDL_MOUSEMOTION:
-        case SDL_MOUSEBUTTONDOWN:
-        case SDL_MOUSEBUTTONUP:
-        case SDL_MOUSEWHEEL:
-        case SDL_JOYAXISMOTION:
-        case SDL_JOYBALLMOTION:
-        case SDL_JOYHATMOTION:
-        case SDL_JOYBUTTONDOWN:
-        case SDL_JOYBUTTONUP:
-        case SDL_JOYDEVICEADDED:
-        case SDL_JOYDEVICEREMOVED:
-        case SDL_CONTROLLERAXISMOTION:
-        case SDL_CONTROLLERBUTTONDOWN:
-        case SDL_CONTROLLERBUTTONUP:
-        case SDL_CONTROLLERDEVICEADDED:
-        case SDL_CONTROLLERDEVICEREMOVED:
-        case SDL_CONTROLLERDEVICEREMAPPED:
-        case SDL_FINGERDOWN:
-        case SDL_FINGERUP:
-        case SDL_FINGERMOTION:
-        case SDL_DOLLARGESTURE:
-        case SDL_DOLLARRECORD:
-        case SDL_MULTIGESTURE:
-        case SDL_CLIPBOARDUPDATE:
-        case SDL_DROPFILE:
-        case SDL_DROPTEXT:
-        case SDL_DROPBEGIN:
-        case SDL_DROPCOMPLETE:
-        case SDL_SENSORUPDATE:
-            return;
-        default:
-            break;
+            eventData[P_LAYER] = layer;
+            SendEvent(E_SDLRAWINPUT, eventData);
+            if (eventData[P_CONSUMED].GetBool())
+                return false;
         }
     }
 
@@ -1962,7 +1922,7 @@ void Input::HandleSDLEvent(void* sdlEvent)
         {
             focusedThisFrame_ = true;
             // Do not cause the click to actually go throughfin
-            return;
+            return true;
         }
         else if (evt.type == SDL_FINGERDOWN)
         {
@@ -1972,7 +1932,7 @@ void Input::HandleSDLEvent(void* sdlEvent)
         }
         else
 #endif
-            return;
+            return true;
     }
 
     switch (evt.type)
@@ -2468,6 +2428,7 @@ void Input::HandleSDLEvent(void* sdlEvent)
 
     default: break;
     }
+    return true;
 }
 
 void Input::HandleScreenMode(StringHash eventType, VariantMap& eventData)

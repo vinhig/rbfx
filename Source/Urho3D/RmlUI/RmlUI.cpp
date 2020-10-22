@@ -51,6 +51,7 @@
 #include "../RmlUI/RmlUIComponent.h"
 
 #include <atomic>
+#include <SDL/SDL.h>
 #include <EASTL/fixed_vector.h>
 #include <RmlUi/Core.h>
 #include <RmlUi/Debugger.h>
@@ -67,8 +68,8 @@ static MouseButton MakeTouchIDMask(int id)
     return static_cast<MouseButton>(1u << static_cast<MouseButtonFlags::Integer>(id)); // NOLINT(misc-misplaced-widening-cast)
 }
 
-static int MouseButtonUrho3DToRml(MouseButton button);
-static int ModifiersUrho3DToRml(QualifierFlags modifier);
+static int MouseButtonSDLToRml(unsigned int button);
+static int ModifiersSDLToRml(unsigned short modifier);
 
 namespace Detail
 {
@@ -137,129 +138,129 @@ static Detail::RmlContextInstancer RmlContextInstancerInstance;
 
 /// Map engine keys to RmlUi keys. Note that top bit is cleared from key constants when they are used as array index.
 static const ea::unordered_map<unsigned, uint16_t> keyMap{
-    { KEY_SPACE, Rml::Input::KI_SPACE },
-    { KEY_0, Rml::Input::KI_0 },
-    { KEY_1, Rml::Input::KI_1 },
-    { KEY_2, Rml::Input::KI_2 },
-    { KEY_3, Rml::Input::KI_3 },
-    { KEY_4, Rml::Input::KI_4 },
-    { KEY_5, Rml::Input::KI_5 },
-    { KEY_6, Rml::Input::KI_6 },
-    { KEY_7, Rml::Input::KI_7 },
-    { KEY_8, Rml::Input::KI_8 },
-    { KEY_9, Rml::Input::KI_9 },
-    { KEY_A, Rml::Input::KI_A },
-    { KEY_B, Rml::Input::KI_B },
-    { KEY_C, Rml::Input::KI_C },
-    { KEY_D, Rml::Input::KI_D },
-    { KEY_E, Rml::Input::KI_E },
-    { KEY_F, Rml::Input::KI_F },
-    { KEY_G, Rml::Input::KI_G },
-    { KEY_H, Rml::Input::KI_H },
-    { KEY_I, Rml::Input::KI_I },
-    { KEY_J, Rml::Input::KI_J },
-    { KEY_K, Rml::Input::KI_K },
-    { KEY_L, Rml::Input::KI_L },
-    { KEY_M, Rml::Input::KI_M },
-    { KEY_N, Rml::Input::KI_N },
-    { KEY_O, Rml::Input::KI_O },
-    { KEY_P, Rml::Input::KI_P },
-    { KEY_Q, Rml::Input::KI_Q },
-    { KEY_R, Rml::Input::KI_R },
-    { KEY_S, Rml::Input::KI_S },
-    { KEY_T, Rml::Input::KI_T },
-    { KEY_U, Rml::Input::KI_U },
-    { KEY_V, Rml::Input::KI_V },
-    { KEY_W, Rml::Input::KI_W },
-    { KEY_X, Rml::Input::KI_X },
-    { KEY_Y, Rml::Input::KI_Y },
-    { KEY_Z, Rml::Input::KI_Z },
-    { KEY_SEMICOLON, Rml::Input::KI_OEM_1 },           // US standard keyboard; the ';:' key.
-    { KEY_EQUALS, Rml::Input::KI_OEM_PLUS },           // Any region; the '=+' key.
-    { KEY_COMMA, Rml::Input::KI_OEM_COMMA },           // Any region; the ',<' key.
-    { KEY_MINUS, Rml::Input::KI_OEM_MINUS },           // Any region; the '-_' key.
-    { KEY_PERIOD, Rml::Input::KI_OEM_PERIOD },         // Any region; the '.>' key.
-    { KEY_SLASH, Rml::Input::KI_OEM_2 },               // Any region; the '/?' key.
-    { KEY_LEFTBRACKET, Rml::Input::KI_OEM_4 },         // US standard keyboard; the '[{' key.
-    { KEY_BACKSLASH, Rml::Input::KI_OEM_5 },           // US standard keyboard; the '\|' key.
-    { KEY_RIGHTBRACKET, Rml::Input::KI_OEM_6 },        // US standard keyboard; the ']}' key.
-    { KEY_KP_0, Rml::Input::KI_NUMPAD0 },
-    { KEY_KP_1, Rml::Input::KI_NUMPAD1 },
-    { KEY_KP_2, Rml::Input::KI_NUMPAD2 },
-    { KEY_KP_3, Rml::Input::KI_NUMPAD3 },
-    { KEY_KP_4, Rml::Input::KI_NUMPAD4 },
-    { KEY_KP_5, Rml::Input::KI_NUMPAD5 },
-    { KEY_KP_6, Rml::Input::KI_NUMPAD6 },
-    { KEY_KP_7, Rml::Input::KI_NUMPAD7 },
-    { KEY_KP_8, Rml::Input::KI_NUMPAD8 },
-    { KEY_KP_9, Rml::Input::KI_NUMPAD9 },
-    { KEY_KP_ENTER, Rml::Input::KI_NUMPADENTER },
-    { KEY_KP_MULTIPLY, Rml::Input::KI_MULTIPLY },      // Asterisk on the numeric keypad.
-    { KEY_KP_PLUS, Rml::Input::KI_ADD },               // Plus on the numeric keypad.
-    { KEY_KP_SPACE, Rml::Input::KI_SEPARATOR },
-    { KEY_KP_MINUS, Rml::Input::KI_SUBTRACT },         // Minus on the numeric keypad.
-    { KEY_KP_DECIMAL, Rml::Input::KI_DECIMAL },        // Period on the numeric keypad.
-    { KEY_KP_DIVIDE, Rml::Input::KI_DIVIDE },          // Forward Slash on the numeric keypad.
-    { KEY_BACKSPACE, Rml::Input::KI_BACK },            // Backspace key.
-    { KEY_TAB, Rml::Input::KI_TAB },                   // Tab key.
-    { KEY_CLEAR, Rml::Input::KI_CLEAR },
-    { KEY_RETURN, Rml::Input::KI_RETURN },
-    { KEY_PAUSE, Rml::Input::KI_PAUSE },
-    { KEY_CAPSLOCK, Rml::Input::KI_CAPITAL },          // Capslock key.
-    { KEY_ESCAPE, Rml::Input::KI_ESCAPE },             // Escape key.
-    { KEY_PAGEUP, Rml::Input::KI_PRIOR },              // Page Up key.
-    { KEY_PAGEDOWN, Rml::Input::KI_NEXT },             // Page Down key.
-    { KEY_END, Rml::Input::KI_END },
-    { KEY_HOME, Rml::Input::KI_HOME },
-    { KEY_LEFT, Rml::Input::KI_LEFT },                 // Left Arrow key.
-    { KEY_UP, Rml::Input::KI_UP },                     // Up Arrow key.
-    { KEY_RIGHT, Rml::Input::KI_RIGHT },               // Right Arrow key.
-    { KEY_DOWN, Rml::Input::KI_DOWN },                 // Down Arrow key.
-    { KEY_SELECT, Rml::Input::KI_SELECT },
-    { KEY_PRINTSCREEN, Rml::Input::KI_SNAPSHOT },      // Print Screen key.
-    { KEY_INSERT, Rml::Input::KI_INSERT },
-    { KEY_DELETE, Rml::Input::KI_DELETE },
-    { KEY_HELP, Rml::Input::KI_HELP },
-    { KEY_LGUI, Rml::Input::KI_LWIN },                 // Left Windows key.
-    { KEY_RGUI, Rml::Input::KI_RWIN },                 // Right Windows key.
-    { KEY_APPLICATION, Rml::Input::KI_APPS },          // Applications key.
-    { KEY_POWER, Rml::Input::KI_POWER },
-    { KEY_SLEEP, Rml::Input::KI_SLEEP },
-    { KEY_F1, Rml::Input::KI_F1 },
-    { KEY_F2, Rml::Input::KI_F2 },
-    { KEY_F3, Rml::Input::KI_F3 },
-    { KEY_F4, Rml::Input::KI_F4 },
-    { KEY_F5, Rml::Input::KI_F5 },
-    { KEY_F6, Rml::Input::KI_F6 },
-    { KEY_F7, Rml::Input::KI_F7 },
-    { KEY_F8, Rml::Input::KI_F8 },
-    { KEY_F9, Rml::Input::KI_F9 },
-    { KEY_F10, Rml::Input::KI_F10 },
-    { KEY_F11, Rml::Input::KI_F11 },
-    { KEY_F12, Rml::Input::KI_F12 },
-    { KEY_F13, Rml::Input::KI_F13 },
-    { KEY_F14, Rml::Input::KI_F14 },
-    { KEY_F15, Rml::Input::KI_F15 },
-    { KEY_F16, Rml::Input::KI_F16 },
-    { KEY_F17, Rml::Input::KI_F17 },
-    { KEY_F18, Rml::Input::KI_F18 },
-    { KEY_F19, Rml::Input::KI_F19 },
-    { KEY_F20, Rml::Input::KI_F20 },
-    { KEY_F21, Rml::Input::KI_F21 },
-    { KEY_F22, Rml::Input::KI_F22 },
-    { KEY_F23, Rml::Input::KI_F23 },
-    { KEY_F24, Rml::Input::KI_F24 },
-    { KEY_NUMLOCKCLEAR, Rml::Input::KI_NUMLOCK },      // Numlock key.
-    { KEY_SCROLLLOCK, Rml::Input::KI_SCROLL },         // Scroll Lock key.
-    { KEY_LSHIFT, Rml::Input::KI_LSHIFT },
-    { KEY_RSHIFT, Rml::Input::KI_RSHIFT },
-    { KEY_LCTRL, Rml::Input::KI_LCONTROL },
-    { KEY_RCTRL, Rml::Input::KI_RCONTROL },
-    { KEY_LALT, Rml::Input::KI_LMENU },
-    { KEY_RALT, Rml::Input::KI_RMENU },
-    { KEY_MUTE, Rml::Input::KI_VOLUME_MUTE },
-    { KEY_VOLUMEDOWN, Rml::Input::KI_VOLUME_DOWN },
-    { KEY_VOLUMEUP, Rml::Input::KI_VOLUME_UP },
+    { SDLK_SPACE, Rml::Input::KI_SPACE },
+    { SDLK_0, Rml::Input::KI_0 },
+    { SDLK_1, Rml::Input::KI_1 },
+    { SDLK_2, Rml::Input::KI_2 },
+    { SDLK_3, Rml::Input::KI_3 },
+    { SDLK_4, Rml::Input::KI_4 },
+    { SDLK_5, Rml::Input::KI_5 },
+    { SDLK_6, Rml::Input::KI_6 },
+    { SDLK_7, Rml::Input::KI_7 },
+    { SDLK_8, Rml::Input::KI_8 },
+    { SDLK_9, Rml::Input::KI_9 },
+    { SDLK_a, Rml::Input::KI_A },
+    { SDLK_b, Rml::Input::KI_B },
+    { SDLK_c, Rml::Input::KI_C },
+    { SDLK_d, Rml::Input::KI_D },
+    { SDLK_e, Rml::Input::KI_E },
+    { SDLK_f, Rml::Input::KI_F },
+    { SDLK_g, Rml::Input::KI_G },
+    { SDLK_h, Rml::Input::KI_H },
+    { SDLK_i, Rml::Input::KI_I },
+    { SDLK_j, Rml::Input::KI_J },
+    { SDLK_k, Rml::Input::KI_K },
+    { SDLK_l, Rml::Input::KI_L },
+    { SDLK_m, Rml::Input::KI_M },
+    { SDLK_n, Rml::Input::KI_N },
+    { SDLK_o, Rml::Input::KI_O },
+    { SDLK_p, Rml::Input::KI_P },
+    { SDLK_q, Rml::Input::KI_Q },
+    { SDLK_r, Rml::Input::KI_R },
+    { SDLK_s, Rml::Input::KI_S },
+    { SDLK_t, Rml::Input::KI_T },
+    { SDLK_u, Rml::Input::KI_U },
+    { SDLK_v, Rml::Input::KI_V },
+    { SDLK_w, Rml::Input::KI_W },
+    { SDLK_x, Rml::Input::KI_X },
+    { SDLK_y, Rml::Input::KI_Y },
+    { SDLK_z, Rml::Input::KI_Z },
+    { SDLK_SEMICOLON, Rml::Input::KI_OEM_1 },           // US standard keyboard; the ';:' key.
+    { SDLK_EQUALS, Rml::Input::KI_OEM_PLUS },           // Any region; the '=+' key.
+    { SDLK_COMMA, Rml::Input::KI_OEM_COMMA },           // Any region; the ',<' key.
+    { SDLK_MINUS, Rml::Input::KI_OEM_MINUS },           // Any region; the '-_' key.
+    { SDLK_PERIOD, Rml::Input::KI_OEM_PERIOD },         // Any region; the '.>' key.
+    { SDLK_SLASH, Rml::Input::KI_OEM_2 },               // Any region; the '/?' key.
+    { SDLK_LEFTBRACKET, Rml::Input::KI_OEM_4 },         // US standard keyboard; the '[{' key.
+    { SDLK_BACKSLASH, Rml::Input::KI_OEM_5 },           // US standard keyboard; the '\|' key.
+    { SDLK_RIGHTBRACKET, Rml::Input::KI_OEM_6 },        // US standard keyboard; the ']}' key.
+    { SDLK_KP_0, Rml::Input::KI_NUMPAD0 },
+    { SDLK_KP_1, Rml::Input::KI_NUMPAD1 },
+    { SDLK_KP_2, Rml::Input::KI_NUMPAD2 },
+    { SDLK_KP_3, Rml::Input::KI_NUMPAD3 },
+    { SDLK_KP_4, Rml::Input::KI_NUMPAD4 },
+    { SDLK_KP_5, Rml::Input::KI_NUMPAD5 },
+    { SDLK_KP_6, Rml::Input::KI_NUMPAD6 },
+    { SDLK_KP_7, Rml::Input::KI_NUMPAD7 },
+    { SDLK_KP_8, Rml::Input::KI_NUMPAD8 },
+    { SDLK_KP_9, Rml::Input::KI_NUMPAD9 },
+    { SDLK_KP_ENTER, Rml::Input::KI_NUMPADENTER },
+    { SDLK_KP_MULTIPLY, Rml::Input::KI_MULTIPLY },      // Asterisk on the numeric keypad.
+    { SDLK_KP_PLUS, Rml::Input::KI_ADD },               // Plus on the numeric keypad.
+    { SDLK_KP_SPACE, Rml::Input::KI_SEPARATOR },
+    { SDLK_KP_MINUS, Rml::Input::KI_SUBTRACT },         // Minus on the numeric keypad.
+    { SDLK_KP_DECIMAL, Rml::Input::KI_DECIMAL },        // Period on the numeric keypad.
+    { SDLK_KP_DIVIDE, Rml::Input::KI_DIVIDE },          // Forward Slash on the numeric keypad.
+    { SDLK_BACKSPACE, Rml::Input::KI_BACK },            // Backspace key.
+    { SDLK_TAB, Rml::Input::KI_TAB },                   // Tab key.
+    { SDLK_CLEAR, Rml::Input::KI_CLEAR },
+    { SDLK_RETURN, Rml::Input::KI_RETURN },
+    { SDLK_PAUSE, Rml::Input::KI_PAUSE },
+    { SDLK_CAPSLOCK, Rml::Input::KI_CAPITAL },          // Capslock key.
+    { SDLK_ESCAPE, Rml::Input::KI_ESCAPE },             // Escape key.
+    { SDLK_PAGEUP, Rml::Input::KI_PRIOR },              // Page Up key.
+    { SDLK_PAGEDOWN, Rml::Input::KI_NEXT },             // Page Down key.
+    { SDLK_END, Rml::Input::KI_END },
+    { SDLK_HOME, Rml::Input::KI_HOME },
+    { SDLK_LEFT, Rml::Input::KI_LEFT },                 // Left Arrow key.
+    { SDLK_UP, Rml::Input::KI_UP },                     // Up Arrow key.
+    { SDLK_RIGHT, Rml::Input::KI_RIGHT },               // Right Arrow key.
+    { SDLK_DOWN, Rml::Input::KI_DOWN },                 // Down Arrow key.
+    { SDLK_SELECT, Rml::Input::KI_SELECT },
+    { SDLK_PRINTSCREEN, Rml::Input::KI_SNAPSHOT },      // Print Screen key.
+    { SDLK_INSERT, Rml::Input::KI_INSERT },
+    { SDLK_DELETE, Rml::Input::KI_DELETE },
+    { SDLK_HELP, Rml::Input::KI_HELP },
+    { SDLK_LGUI, Rml::Input::KI_LWIN },                 // Left Windows key.
+    { SDLK_RGUI, Rml::Input::KI_RWIN },                 // Right Windows key.
+    { SDLK_APPLICATION, Rml::Input::KI_APPS },          // Applications key.
+    { SDLK_POWER, Rml::Input::KI_POWER },
+    { SDLK_SLEEP, Rml::Input::KI_SLEEP },
+    { SDLK_F1, Rml::Input::KI_F1 },
+    { SDLK_F2, Rml::Input::KI_F2 },
+    { SDLK_F3, Rml::Input::KI_F3 },
+    { SDLK_F4, Rml::Input::KI_F4 },
+    { SDLK_F5, Rml::Input::KI_F5 },
+    { SDLK_F6, Rml::Input::KI_F6 },
+    { SDLK_F7, Rml::Input::KI_F7 },
+    { SDLK_F8, Rml::Input::KI_F8 },
+    { SDLK_F9, Rml::Input::KI_F9 },
+    { SDLK_F10, Rml::Input::KI_F10 },
+    { SDLK_F11, Rml::Input::KI_F11 },
+    { SDLK_F12, Rml::Input::KI_F12 },
+    { SDLK_F13, Rml::Input::KI_F13 },
+    { SDLK_F14, Rml::Input::KI_F14 },
+    { SDLK_F15, Rml::Input::KI_F15 },
+    { SDLK_F16, Rml::Input::KI_F16 },
+    { SDLK_F17, Rml::Input::KI_F17 },
+    { SDLK_F18, Rml::Input::KI_F18 },
+    { SDLK_F19, Rml::Input::KI_F19 },
+    { SDLK_F20, Rml::Input::KI_F20 },
+    { SDLK_F21, Rml::Input::KI_F21 },
+    { SDLK_F22, Rml::Input::KI_F22 },
+    { SDLK_F23, Rml::Input::KI_F23 },
+    { SDLK_F24, Rml::Input::KI_F24 },
+    { SDLK_NUMLOCKCLEAR, Rml::Input::KI_NUMLOCK },      // Numlock key.
+    { SDLK_SCROLLLOCK, Rml::Input::KI_SCROLL },         // Scroll Lock key.
+    { SDLK_LSHIFT, Rml::Input::KI_LSHIFT },
+    { SDLK_RSHIFT, Rml::Input::KI_RSHIFT },
+    { SDLK_LCTRL, Rml::Input::KI_LCONTROL },
+    { SDLK_RCTRL, Rml::Input::KI_RCONTROL },
+    { SDLK_LALT, Rml::Input::KI_LMENU },
+    { SDLK_RALT, Rml::Input::KI_RMENU },
+    { SDLK_MUTE, Rml::Input::KI_VOLUME_MUTE },
+    { SDLK_VOLUMEDOWN, Rml::Input::KI_VOLUME_DOWN },
+    { SDLK_VOLUMEUP, Rml::Input::KI_VOLUME_UP },
 };
 
 RmlUI::RmlUI(Context* context, const char* name)
@@ -282,18 +283,7 @@ RmlUI::RmlUI(Context* context, const char* name)
     if (auto* ui = GetSubsystem<RmlUI>())
         ui->siblingSubsystems_.push_back(WeakPtr(this));
 
-    SubscribeToEvent(E_MOUSEBUTTONDOWN, &RmlUI::HandleMouseButtonDown);
-    SubscribeToEvent(E_MOUSEBUTTONUP, &RmlUI::HandleMouseButtonUp);
-    SubscribeToEvent(E_MOUSEMOVE, &RmlUI::HandleMouseMove);
-    SubscribeToEvent(E_MOUSEWHEEL, &RmlUI::HandleMouseWheel);
-    SubscribeToEvent(E_TOUCHBEGIN, &RmlUI::HandleTouchBegin);
-    SubscribeToEvent(E_TOUCHEND, &RmlUI::HandleTouchEnd);
-    SubscribeToEvent(E_TOUCHMOVE, &RmlUI::HandleTouchMove);
-    SubscribeToEvent(E_KEYDOWN, &RmlUI::HandleKeyDown);
-    SubscribeToEvent(E_KEYUP, &RmlUI::HandleKeyUp);
-    SubscribeToEvent(E_TEXTINPUT, &RmlUI::HandleTextInput);
-    SubscribeToEvent(E_DROPFILE, &RmlUI::HandleDropFile);
-
+    SubscribeToEvent(E_SDLRAWINPUT, &RmlUI::HandleInput);
     SubscribeToEvent(E_SCREENMODE, &RmlUI::HandleScreenMode);
     SubscribeToEvent(E_POSTUPDATE, &RmlUI::HandlePostUpdate);
     SubscribeToEvent(E_ENDALLVIEWSRENDER, &RmlUI::HandleEndAllViewsRender);
@@ -363,124 +353,314 @@ void RmlUI::HandleScreenMode(StringHash, VariantMap& eventData)
     canvasResizedEvent_(this, args);
 }
 
-void RmlUI::HandleMouseButtonDown(StringHash, VariantMap& eventData)
+void RmlUI::HandleInput(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MouseButtonDown;
-    int button = MouseButtonUrho3DToRml(static_cast<MouseButton>(eventData[P_BUTTON].GetInt()));
-    int modifiers = ModifiersUrho3DToRml(static_cast<QualifierFlags>(eventData[P_QUALIFIERS].GetInt()));
+    using namespace SDLRawInput;
+    if (eventData[P_LAYER].GetInt() != IL_MIDDLEWARE)
+        return;
 
-    // Manage focus between multiple RmlUI contexts. If no element or root element is hovered - unfocus focused input element.
-    if (!IsHovered() && IsInputCapturedInternal())
+    const SDL_Event& evt = *static_cast<SDL_Event*>(eventData[P_SDLEVENT].GetVoidPtr());
+
+    switch (evt.type)
     {
-        Detail::RmlSystem* rmlSystem = static_cast<Detail::RmlSystem*>(Rml::GetSystemInterface());
-        bool isTextInputActive = rmlSystem->TextInputActivatedThisFrame();
-        rmlContext_->GetFocusElement()->Blur();
-        if (isTextInputActive)
-        {
-            Input* input = GetSubsystem<Input>();
-            input->SetScreenKeyboardVisible(true);
-        }
-        // Do not process click as it is clearly not meant for this context.
-        return;
+    case SDL_KEYDOWN:
+    {
+        auto* input = GetSubsystem<Input>();
+        if (input->IsMouseGrabbed())
+            return;
+        auto it = keyMap.find(evt.key.keysym.sym);
+        if (it == keyMap.end())
+            return;
+        Rml::Input::KeyIdentifier key = static_cast<Rml::Input::KeyIdentifier>(it->second);
+        int modifiers = ModifiersSDLToRml(evt.key.keysym.mod);
+        eventData[P_CONSUMED] = !rmlContext_->ProcessKeyDown(key, modifiers);
+        if (key == Rml::Input::KI_RETURN || key == Rml::Input::KI_NUMPADENTER)
+            rmlContext_->ProcessTextInput('\n');
+        break;
     }
-    rmlContext_->ProcessMouseButtonDown(button, modifiers);
-}
 
-void RmlUI::HandleMouseButtonUp(StringHash, VariantMap& eventData)
-{
-    using namespace MouseButtonUp;
-    int button = MouseButtonUrho3DToRml(static_cast<MouseButton>(eventData[P_BUTTON].GetInt()));
-    int modifiers = ModifiersUrho3DToRml(static_cast<QualifierFlags>(eventData[P_QUALIFIERS].GetInt()));
-    rmlContext_->ProcessMouseButtonUp(button, modifiers);
-}
+    case SDL_KEYUP:
+    {
+        auto* input = GetSubsystem<Input>();
+        if (input->IsMouseGrabbed())
+            return;
+        auto it = keyMap.find(evt.key.keysym.sym);
+        if (it == keyMap.end())
+            return;
+        Rml::Input::KeyIdentifier key = static_cast<Rml::Input::KeyIdentifier>(it->second);
+        int modifiers = ModifiersSDLToRml(evt.key.keysym.mod);
+        eventData[P_CONSUMED] = !rmlContext_->ProcessKeyUp(key, modifiers);
+        break;
+    }
 
-void RmlUI::HandleMouseMove(StringHash, VariantMap& eventData)
-{
-    using namespace MouseMove;
-    int modifiers = ModifiersUrho3DToRml(static_cast<QualifierFlags>(eventData[P_QUALIFIERS].GetInt()));
-    IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    mouseMoveEvent_(this, pos);
-    if (pos.x_ >= 0 && pos.y_ >= 0)
-        rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
-}
+    case SDL_TEXTINPUT:
+        eventData[P_CONSUMED] = !rmlContext_->ProcessTextInput(&evt.text.text[0]);
+        break;
 
-void RmlUI::HandleMouseWheel(StringHash, VariantMap& eventData)
-{
-    using namespace MouseWheel;
-    auto* input = GetSubsystem<Input>();
-    if (input->IsMouseGrabbed())
-        return;
-    int modifiers = ModifiersUrho3DToRml(static_cast<QualifierFlags>(eventData[P_QUALIFIERS].GetInt()));
-    rmlContext_->ProcessMouseWheel(-eventData[P_WHEEL].GetInt(), modifiers);
-}
+    case SDL_MOUSEBUTTONDOWN:
+    {
+        auto* input = GetSubsystem<Input>();
+        if (input->IsMouseGrabbed())
+            return;
+        int button = MouseButtonSDLToRml(evt.button.button);
+        int modifiers = ModifiersSDLToRml(SDL_GetModState());
+        eventData[P_CONSUMED] = !rmlContext_->ProcessMouseButtonDown(button, modifiers);
+        break;
+    }
 
-void RmlUI::HandleTouchBegin(StringHash, VariantMap& eventData)
-{
-    using namespace TouchBegin;
-    auto* input = GetSubsystem<Input>();
-    if (input->IsMouseGrabbed())
-        return;
-    const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
-    int modifiers = ModifiersUrho3DToRml(input->GetQualifiers());
-    int button = MouseButtonUrho3DToRml(touchId);
-    rmlContext_->ProcessMouseButtonDown(button, modifiers);
-    IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    mouseMoveEvent_(this, pos);
-    if (pos.x_ >= 0 && pos.y_ >= 0)
-        rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
-}
+    case SDL_MOUSEBUTTONUP:
+    {
+        int button = MouseButtonSDLToRml(evt.button.button);
+        int modifiers = ModifiersSDLToRml(SDL_GetModState());
+        eventData[P_CONSUMED] = !rmlContext_->ProcessMouseButtonUp(button, modifiers);
+        break;
+    }
 
-void RmlUI::HandleTouchEnd(StringHash, VariantMap& eventData)
-{
-    using namespace TouchEnd;
-    auto* input = GetSubsystem<Input>();
-    const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
-    int modifiers = ModifiersUrho3DToRml(input->GetQualifiers());
-    int button = MouseButtonUrho3DToRml(touchId);
-    rmlContext_->ProcessMouseMove(eventData[P_X].GetInt(), eventData[P_Y].GetInt(), modifiers);
-    rmlContext_->ProcessMouseButtonUp(button, modifiers);
-}
+    case SDL_MOUSEMOTION:
+    {
+        int modifiers = ModifiersSDLToRml(SDL_GetModState());
+        IntVector2 pos(evt.motion.x, evt.motion.y);
+        mouseMoveEvent_(this, pos);
+        if (pos.x_ >= 0 && pos.y_ >= 0)
+            eventData[P_CONSUMED] = !rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
+    }
 
-void RmlUI::HandleTouchMove(StringHash, VariantMap& eventData)
-{
-    using namespace TouchMove;
-    auto* input = GetSubsystem<Input>();
-    // const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
-    int modifiers = ModifiersUrho3DToRml(input->GetQualifiers());
-    IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    mouseMoveEvent_(this, pos);
-    if (pos.x_ >= 0 && pos.y_ >= 0)
-        rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
-}
+    case SDL_MOUSEWHEEL:
+    {
+        auto* input = GetSubsystem<Input>();
+        if (input->IsMouseGrabbed())
+            return;
+        int modifiers = ModifiersSDLToRml(SDL_GetModState());
+        eventData[P_CONSUMED] = !rmlContext_->ProcessMouseWheel(-evt.wheel.y, modifiers);
+        break;
+    }
 
-void RmlUI::HandleKeyDown(StringHash, VariantMap& eventData)
-{
-    using namespace KeyDown;
-    auto it = keyMap.find(eventData[P_KEY].GetUInt());
-    if (it == keyMap.end())
-        return;
-    Rml::Input::KeyIdentifier key = static_cast<Rml::Input::KeyIdentifier>(it->second);
-    int modifiers = ModifiersUrho3DToRml((QualifierFlags)eventData[P_QUALIFIERS].GetInt());
-    rmlContext_->ProcessKeyDown(key, modifiers);
-    if (key == Rml::Input::KI_RETURN || key == Rml::Input::KI_NUMPADENTER)
-        rmlContext_->ProcessTextInput('\n');
-}
+    case SDL_FINGERDOWN:
+    {
+        if (evt.tfinger.touchId != SDL_TOUCH_MOUSEID)
+        {
+            auto* input = GetSubsystem<Input>();
+            auto* graphics = GetSubsystem<Graphics>();
+            if (input->IsMouseGrabbed())
+                return;
+            int modifiers = ModifiersSDLToRml(input->GetQualifiers());
+            int button = MouseButtonSDLToRml(1 << (evt.tfinger.fingerId & 0x7ffffffu));
+            IntVector2 pos(graphics->GetWidth() * evt.tfinger.x, graphics->GetHeight() * evt.tfinger.y);
+            mouseMoveEvent_(this, pos);
+            if (pos.x_ >= 0 && pos.y_ >= 0)
+                rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
+            eventData[P_CONSUMED] = !rmlContext_->ProcessMouseButtonDown(button, modifiers);
+        }
+        break;
+    }
 
-void RmlUI::HandleKeyUp(StringHash, VariantMap& eventData)
-{
-    using namespace KeyUp;
-    auto it = keyMap.find(eventData[P_KEY].GetUInt());
-    if (it == keyMap.end())
-        return;
-    Rml::Input::KeyIdentifier key = static_cast<Rml::Input::KeyIdentifier>(it->second);
-    int modifiers = ModifiersUrho3DToRml((QualifierFlags)eventData[P_QUALIFIERS].GetInt());
-    rmlContext_->ProcessKeyUp(key, modifiers);
-}
+    case SDL_FINGERUP:
+    {
+        if (evt.tfinger.touchId != SDL_TOUCH_MOUSEID)
+        {
+            auto* input = GetSubsystem<Input>();
+            auto* graphics = GetSubsystem<Graphics>();
+            if (input->IsMouseGrabbed())
+                return;
+            int modifiers = ModifiersSDLToRml(input->GetQualifiers());
+            int button = MouseButtonSDLToRml(1 << (evt.tfinger.fingerId & 0x7ffffffu));
+            IntVector2 pos(graphics->GetWidth() * evt.tfinger.x, graphics->GetHeight() * evt.tfinger.y);
+            mouseMoveEvent_(this, pos);
+            if (pos.x_ >= 0 && pos.y_ >= 0)
+                rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
+            eventData[P_CONSUMED] = !rmlContext_->ProcessMouseButtonUp(button, modifiers);
+            break;
+        }
+    }
 
-void RmlUI::HandleTextInput(StringHash, VariantMap& eventData)
-{
-    using namespace TextInput;
-    rmlContext_->ProcessTextInput(eventData[P_TEXT].GetString().c_str());
+    case SDL_FINGERMOTION:
+    {
+        if (evt.tfinger.touchId != SDL_TOUCH_MOUSEID)
+        {
+            auto* input = GetSubsystem<Input>();
+            auto* graphics = GetSubsystem<Graphics>();
+            if (input->IsMouseGrabbed())
+                return;
+            int modifiers = ModifiersSDLToRml(input->GetQualifiers());
+            IntVector2 pos(graphics->GetWidth() * evt.tfinger.x, graphics->GetHeight() * evt.tfinger.y);
+            mouseMoveEvent_(this, pos);
+            if (pos.x_ >= 0 && pos.y_ >= 0)
+                eventData[P_CONSUMED] = !rmlContext_->ProcessMouseMove(pos.x_, pos.y_, modifiers);
+        }
+        break;
+    }
+/*
+    case SDL_JOYBUTTONDOWN:
+        {
+            using namespace JoystickButtonDown;
+
+            unsigned button = evt.jbutton.button;
+            SDL_JoystickID joystickID = evt.jbutton.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            // Skip ordinary joystick event for a controller
+            if (!state.controller_)
+            {
+                VariantMap& eventData = GetEventDataMap();
+                eventData[P_JOYSTICKID] = joystickID;
+                eventData[P_BUTTON] = button;
+
+                if (button < state.buttons_.size())
+                {
+                    state.buttons_[button] = true;
+                    state.buttonPress_[button] = true;
+                    SendEvent(E_JOYSTICKBUTTONDOWN, eventData);
+                }
+            }
+        }
+        break;
+
+    case SDL_JOYBUTTONUP:
+        {
+            using namespace JoystickButtonUp;
+
+            unsigned button = evt.jbutton.button;
+            SDL_JoystickID joystickID = evt.jbutton.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            if (!state.controller_)
+            {
+                VariantMap& eventData = GetEventDataMap();
+                eventData[P_JOYSTICKID] = joystickID;
+                eventData[P_BUTTON] = button;
+
+                if (button < state.buttons_.size())
+                {
+                    if (!state.controller_)
+                        state.buttons_[button] = false;
+                    SendEvent(E_JOYSTICKBUTTONUP, eventData);
+                }
+            }
+        }
+        break;
+
+    case SDL_JOYAXISMOTION:
+        {
+            using namespace JoystickAxisMove;
+
+            SDL_JoystickID joystickID = evt.jaxis.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            if (!state.controller_)
+            {
+                VariantMap& eventData = GetEventDataMap();
+                eventData[P_JOYSTICKID] = joystickID;
+                eventData[P_AXIS] = evt.jaxis.axis;
+                eventData[P_POSITION] = Clamp((float)evt.jaxis.value / 32767.0f, -1.0f, 1.0f);
+
+                if (evt.jaxis.axis < state.axes_.size())
+                {
+                    // If the joystick is a controller, only use the controller axis mappings
+                    // (we'll also get the controller event)
+                    if (!state.controller_)
+                        state.axes_[evt.jaxis.axis] = eventData[P_POSITION].GetFloat();
+                    SendEvent(E_JOYSTICKAXISMOVE, eventData);
+                }
+            }
+        }
+        break;
+
+    case SDL_JOYHATMOTION:
+        {
+            using namespace JoystickHatMove;
+
+            SDL_JoystickID joystickID = evt.jaxis.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            VariantMap& eventData = GetEventDataMap();
+            eventData[P_JOYSTICKID] = joystickID;
+            eventData[P_HAT] = evt.jhat.hat;
+            eventData[P_POSITION] = evt.jhat.value;
+
+            if (evt.jhat.hat < state.hats_.size())
+            {
+                state.hats_[evt.jhat.hat] = evt.jhat.value;
+                SendEvent(E_JOYSTICKHATMOVE, eventData);
+            }
+        }
+        break;
+
+    case SDL_CONTROLLERBUTTONDOWN:
+        {
+            using namespace JoystickButtonDown;
+
+            unsigned button = evt.cbutton.button;
+            SDL_JoystickID joystickID = evt.cbutton.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            VariantMap& eventData = GetEventDataMap();
+            eventData[P_JOYSTICKID] = joystickID;
+            eventData[P_BUTTON] = button;
+
+            if (button < state.buttons_.size())
+            {
+                state.buttons_[button] = true;
+                state.buttonPress_[button] = true;
+                SendEvent(E_JOYSTICKBUTTONDOWN, eventData);
+            }
+        }
+        break;
+
+    case SDL_CONTROLLERBUTTONUP:
+        {
+            using namespace JoystickButtonUp;
+
+            unsigned button = evt.cbutton.button;
+            SDL_JoystickID joystickID = evt.cbutton.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            VariantMap& eventData = GetEventDataMap();
+            eventData[P_JOYSTICKID] = joystickID;
+            eventData[P_BUTTON] = button;
+
+            if (button < state.buttons_.size())
+            {
+                state.buttons_[button] = false;
+                SendEvent(E_JOYSTICKBUTTONUP, eventData);
+            }
+        }
+        break;
+
+    case SDL_CONTROLLERAXISMOTION:
+        {
+            using namespace JoystickAxisMove;
+
+            SDL_JoystickID joystickID = evt.caxis.which;
+            JoystickState& state = joysticks_[joystickID];
+
+            VariantMap& eventData = GetEventDataMap();
+            eventData[P_JOYSTICKID] = joystickID;
+            eventData[P_AXIS] = evt.caxis.axis;
+            eventData[P_POSITION] = Clamp((float)evt.caxis.value / 32767.0f, -1.0f, 1.0f);
+
+            if (evt.caxis.axis < state.axes_.size())
+            {
+                state.axes_[evt.caxis.axis] = eventData[P_POSITION].GetFloat();
+                SendEvent(E_JOYSTICKAXISMOVE, eventData);
+            }
+        }
+        break;
+*/
+    case SDL_DROPFILE:
+    {
+        if (auto* element = rmlContext_->GetHoverElement())
+        {
+            Rml::Dictionary args;
+            args["path"] = evt.drop.file;
+            element->DispatchEvent("dropfile", args);
+        }
+        SDL_free(evt.drop.file);
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void RmlUI::HandlePostUpdate(StringHash, VariantMap& eventData)
@@ -665,29 +845,29 @@ Rml::ElementDocument* RmlUI::ReloadDocument(Rml::ElementDocument* document)
     return newDocument;
 }
 
-static int MouseButtonUrho3DToRml(MouseButton button)
+static int MouseButtonSDLToRml(unsigned int button)
 {
     int rmlButton = -1;
     switch (button)
     {
-    case MOUSEB_LEFT:   rmlButton = 0; break;
-    case MOUSEB_MIDDLE: rmlButton = 2; break;
-    case MOUSEB_RIGHT:  rmlButton = 1; break;
-    case MOUSEB_X1:     rmlButton = 3; break;
-    case MOUSEB_X2:     rmlButton = 4; break;
+    case SDL_BUTTON_LEFT:   rmlButton = 0; break;
+    case SDL_BUTTON_MIDDLE: rmlButton = 2; break;
+    case SDL_BUTTON_RIGHT:  rmlButton = 1; break;
+    case SDL_BUTTON_X1:     rmlButton = 3; break;
+    case SDL_BUTTON_X2:     rmlButton = 4; break;
     default:                           break;
     }
     return rmlButton;
 }
 
-static int ModifiersUrho3DToRml(QualifierFlags modifier)
+static int ModifiersSDLToRml(unsigned short modifier)
 {
     int rmlModifiers = 0;
-    if (modifier & QUAL_ALT)
+    if (modifier & KMOD_ALT)
         rmlModifiers |= Rml::Input::KeyModifier::KM_ALT;
-    if (modifier & QUAL_CTRL)
+    if (modifier & KMOD_CTRL)
         rmlModifiers |= Rml::Input::KeyModifier::KM_CTRL;
-    if (modifier & QUAL_SHIFT)
+    if (modifier & KMOD_SHIFT)
         rmlModifiers |= Rml::Input::KeyModifier::KM_SHIFT;
     return rmlModifiers;
 }

@@ -128,6 +128,8 @@ void SystemUI::OnRawEvent(VariantMap& args)
 {
     assert(imContext_ != nullptr);
     using namespace SDLRawInput;
+    if (args[P_LAYER].GetInt() != IL_IMMEDIATE)
+        return;
 
     auto* evt = static_cast<SDL_Event*>(args[P_SDLEVENT].Get<void*>());
     ImGuiContext& g = *ui::GetCurrentContext();

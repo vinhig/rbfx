@@ -230,6 +230,7 @@ URHO3D_EVENT(E_SDLRAWINPUT, SDLRawInput)
 {
     URHO3D_PARAM(P_SDLEVENT, SDLEvent);           // SDL_Event*
     URHO3D_PARAM(P_CONSUMED, Consumed);           // bool
+    URHO3D_PARAM(P_LAYER, Layer);                 // int
 }
 
 /// Input handling begins.

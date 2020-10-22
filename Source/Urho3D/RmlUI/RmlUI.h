@@ -117,26 +117,8 @@ private:
 
     /// Handle screen mode event.
     void HandleScreenMode(StringHash eventType, VariantMap& eventData);
-    /// Handle mouse button down event.
-    void HandleMouseButtonDown(StringHash eventType, VariantMap& eventData);
-    /// Handle mouse button up event.
-    void HandleMouseButtonUp(StringHash eventType, VariantMap& eventData);
-    /// Handle mouse move event.
-    void HandleMouseMove(StringHash eventType, VariantMap& eventData);
-    /// Handle mouse wheel event.
-    void HandleMouseWheel(StringHash eventType, VariantMap& eventData);
-    /// Handle touch begin event.
-    void HandleTouchBegin(StringHash eventType, VariantMap& eventData);
-    /// Handle touch end event.
-    void HandleTouchEnd(StringHash eventType, VariantMap& eventData);
-    /// Handle touch move event.
-    void HandleTouchMove(StringHash eventType, VariantMap& eventData);
-    /// Handle press event.
-    void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-    /// Handle release event.
-    void HandleKeyUp(StringHash eventType, VariantMap& eventData);
-    /// Handle text input event.
-    void HandleTextInput(StringHash eventType, VariantMap& eventData);
+    /// Handle input event.
+    void HandleInput(StringHash eventType, VariantMap& eventData);
     /// Handle logic post-update event.
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
     /// Handle a file being drag-dropped into the application window.

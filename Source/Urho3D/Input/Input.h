@@ -46,6 +46,21 @@ enum MouseMode
     MM_INVALID
 };
 
+/// %Input layer.
+enum InputLayer
+{
+    /// Lowest layer, handled before anything else. Used for UI of dev tools.
+    IL_IMMEDIATE,
+    /// User by developer tools to intercept input and either block it or modify and pass on to user code.
+    IL_DEVTOOLS,
+    /// Middleware layer, used by RmlUI.
+    IL_MIDDLEWARE,
+    /// User level, used for passing events to user application and setting internal %Input subsystem state.
+    IL_USER,
+    /// Number of layers.
+    IL_MAX,
+};
+
 class Deserializer;
 class Graphics;
 class Serializer;
@@ -303,11 +318,6 @@ public:
     /// Return whether application window is minimized.
     bool IsMinimized() const;
 
-    /// Enable input reporting. When disabled, only E_SDLRAWINPUT event will be sent sent.
-    void SetEnabled(bool enabled) { enabled_ = enabled; }
-    /// Return true if input reporting is enabled.
-    bool GetEnabled() const { return enabled_; }
-
 private:
     /// Initialize when screen mode initially set.
     void Initialize();
@@ -350,7 +360,7 @@ private:
     /// Handle touch events from the controls of screen joystick(s).
     void HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData);
     /// Handle SDL event.
-    void HandleSDLEvent(void* sdlEvent);
+    bool HandleSDLEvent(void* sdlEvent);
 
 #ifndef __EMSCRIPTEN__
     /// Set SDL mouse mode relative.
@@ -442,8 +452,6 @@ private:
     bool mouseMoveScaled_;
     /// Initialized flag.
     bool initialized_;
-    /// Flag indicating that input subsystem is reporting events.
-    bool enabled_ = true;
 
 #ifdef __EMSCRIPTEN__
     /// Emscripten Input glue instance.
