@@ -111,11 +111,11 @@ public:
 	ColourType red, green, blue, alpha;
 
 #ifdef RMLUI_COLOUR_USER_EXTRA
-    #if defined(__has_include) && __has_include(RMLUI_COLOUR_USER_EXTRA)
-        #include RMLUI_COLOUR_USER_EXTRA
-    #else
-        RMLUI_COLOUR_USER_EXTRA
-    #endif
+	#if defined(__has_include) && __has_include(RMLUI_COLOUR_USER_EXTRA)
+		#include RMLUI_COLOUR_USER_EXTRA
+	#else
+		RMLUI_COLOUR_USER_EXTRA
+	#endif
 #endif
 };
 

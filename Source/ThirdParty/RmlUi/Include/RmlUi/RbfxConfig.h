@@ -102,9 +102,9 @@ using SharedPtr = eastl::shared_ptr<T>;
 template<typename T>
 using WeakPtr = eastl::weak_ptr<T>;
 template<typename T, typename... Args>
-inline SharedPtr<T> MakeShared(Args... args) { return eastl::make_shared<T, Args...>(std::forward<Args>(args)...); }
+inline SharedPtr<T> MakeShared(Args&&... args) { return eastl::make_shared<T, Args...>(std::forward<Args>(args)...); }
 template<typename T, typename... Args>
-inline UniquePtr<T> MakeUnique(Args... args) { return eastl::make_unique<T, Args...>(std::forward<Args>(args)...); }
+inline UniquePtr<T> MakeUnique(Args&&... args) { return eastl::make_unique<T, Args...>(std::forward<Args>(args)...); }
 
 }
 
