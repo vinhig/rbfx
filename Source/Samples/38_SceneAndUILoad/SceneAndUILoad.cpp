@@ -24,6 +24,7 @@
 #include <Urho3D/Engine/Engine.h>
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/RenderPipeline.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Scene/Scene.h>
@@ -59,7 +60,7 @@ void SceneAndUILoad::Start()
     SubscribeToEvents();
 
     // Set the mouse mode to use in the sample
-    Sample::InitMouseMode(MM_RELATIVE);
+    Sample::InitMouseMode(MM_ABSOLUTE);
 }
 
 void SceneAndUILoad::CreateScene()
@@ -70,7 +71,11 @@ void SceneAndUILoad::CreateScene()
 
     // Load scene content prepared in the editor (XML format). GetFile() returns an open file from the resource system
     // which scene.LoadXML() will read
-    SharedPtr<File> file = cache->GetFile("Scenes/SceneLoadExample.xml");
+    SharedPtr<File> file = cache->GetFile("Scenes/00_VertexLights.xml");
+    //SharedPtr<File> file = cache->GetFile("Scenes/01_MultipleDirectionalLights.xml");
+    //SharedPtr<File> file = cache->GetFile("Scenes/03_GeometryTypes.xml");
+    //SharedPtr<File> file = cache->GetFile("Scenes/04_SpotLights.xml");
+    //SharedPtr<File> file = cache->GetFile("Scenes/06_PointLight.xml");
     scene_->LoadXML(*file);
 
     // Create the camera (not included in the scene file)
@@ -83,6 +88,7 @@ void SceneAndUILoad::CreateScene()
 
 void SceneAndUILoad::CreateUI()
 {
+    return;
     auto* cache = GetSubsystem<ResourceCache>();
     auto* ui = GetSubsystem<UI>();
 
@@ -118,6 +124,7 @@ void SceneAndUILoad::SetupViewport()
 
     // Set up a viewport to the Renderer subsystem so that the 3D scene can be seen
     SharedPtr<Viewport> viewport(new Viewport(context_, scene_, cameraNode_->GetComponent<Camera>()));
+    viewport->SetRenderPipeline(MakeShared<RenderPipeline>(context_));
     renderer->SetViewport(0, viewport);
 }
 
@@ -132,7 +139,7 @@ void SceneAndUILoad::MoveCamera(float timeStep)
     // Right mouse button controls mouse cursor visibility: hide when pressed
     auto* ui = GetSubsystem<UI>();
     auto* input = GetSubsystem<Input>();
-    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
+    //ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
 
     // Do not move if the UI has a focused element
     if (ui->GetFocusElement())
@@ -145,7 +152,7 @@ void SceneAndUILoad::MoveCamera(float timeStep)
 
     // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees
     // Only move the camera when the cursor is hidden
-    if (!ui->GetCursor()->IsVisible())
+    if (input->GetMouseButtonDown(MOUSEB_RIGHT))
     {
         IntVector2 mouseMove = input->GetMouseMove();
         yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
@@ -180,14 +187,14 @@ void SceneAndUILoad::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void SceneAndUILoad::ToggleLight1(StringHash eventType, VariantMap& eventData)
 {
-    Node* lightNode = scene_->GetChild("Light1", true);
+    Node* lightNode = scene_->GetChild("Red Light", true);
     if (lightNode)
         lightNode->SetEnabled(!lightNode->IsEnabled());
 }
 
 void SceneAndUILoad::ToggleLight2(StringHash eventType, VariantMap& eventData)
 {
-    Node* lightNode = scene_->GetChild("Light2", true);
+    Node* lightNode = scene_->GetChild("Blue Light", true);
     if (lightNode)
         lightNode->SetEnabled(!lightNode->IsEnabled());
 }

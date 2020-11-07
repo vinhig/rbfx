@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<scene id="1">
+	<attribute name="Name" value="" />
+	<attribute name="Time Scale" value="1.000000" />
+	<attribute name="Smoothing Constant" value="50.000000" />
+	<attribute name="Snap Threshold" value="5.000000" />
+	<attribute name="Elapsed Time" value="0.000000" />
+	<attribute name="Next Replicated Node ID" value="17" />
+	<attribute name="Next Replicated Component ID" value="17" />
+	<attribute name="Next Local Node ID" value="16777224" />
+	<attribute name="Next Local Component ID" value="16777229" />
+	<attribute name="Variables" />
+	<attribute name="Variable Names" value="" />
+	<attribute name="Lightmaps" value="Texture2D" />
+	<component type="Octree" id="1" />
+	<component type="EditorSceneSettings" id="16777216">
+		<attribute name="Camera Position" value="1.93201 3.78434 -1.62144" />
+		<attribute name="Camera Rotation" value="0.758232 0.281542 -0.551242 0.20482" />
+	</component>
+	<node id="2">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Ground" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="10 10 10" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="2">
+			<attribute name="Model" value="Model;Models/Plane.mdl" />
+			<attribute name="Material" value="Material;" />
+		</component>
+	</node>
+	<node id="3">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Main Light 1" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="-0.889391 -0.457147 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="3">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="0.768627 1 1 1" />
+			<attribute name="Brightness Multiplier" value="0.300000" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="5">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Main Light 2" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="-0.87586 -0.450192 0.154548 -0.0794377" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="5">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="1 1 0.490196 1" />
+			<attribute name="Brightness Multiplier" value="0.300000" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="7">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Caster" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="6.37906e-08 3.51855 -2.28685" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="7">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="8">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Pane 1" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0.331086 2.63735 -1.73469" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.05 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="8">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/GreenTransparent.xml" />
+		</component>
+	</node>
+	<node id="9">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Pane 2" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0.138772 2.20578 -1.11107" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.05 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="9">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/GreenTransparent.xml" />
+		</component>
+	</node>
+	<node id="10">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Pane 3" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-0.100714 1.61505 -0.564516" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.05 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="10">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/GreenTransparent.xml" />
+		</component>
+	</node>
+</scene>

@@ -25,6 +25,7 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Graphics/BillboardSet.h>
 #include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/RenderPipeline.h>
 #include <Urho3D/Graphics/DebugRenderer.h>
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Graphics/Material.h>
@@ -80,6 +81,7 @@ SceneTab::SceneTab(Context* context)
     // Main viewport
     viewport_ = new Viewport(context_);
     viewport_->SetRect(rect_);
+    viewport_->SetRenderPipeline(MakeShared<RenderPipeline>(context_));
     texture_ = new Texture2D(context_);
     texture_->SetSize(rect_.Width(), rect_.Height(), Graphics::GetRGBFormat(), TEXTURE_RENDERTARGET);
     texture_->GetRenderSurface()->SetUpdateMode(SURFACE_UPDATEALWAYS);

@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<scene id="1">
+	<attribute name="Name" value="" />
+	<attribute name="Time Scale" value="1.000000" />
+	<attribute name="Smoothing Constant" value="50.000000" />
+	<attribute name="Snap Threshold" value="5.000000" />
+	<attribute name="Elapsed Time" value="0.000000" />
+	<attribute name="Next Replicated Node ID" value="89" />
+	<attribute name="Next Replicated Component ID" value="89" />
+	<attribute name="Next Local Node ID" value="16777253" />
+	<attribute name="Next Local Component ID" value="16777285" />
+	<attribute name="Variables" />
+	<attribute name="Variable Names" value="" />
+	<attribute name="Lightmaps" value="Texture2D" />
+	<component type="Octree" id="1" />
+	<component type="EditorSceneSettings" id="16777228">
+		<attribute name="Camera Position" value="-16.0011 3.27002 -2.65396" />
+		<attribute name="Camera Rotation" value="0.846795 0.391384 -0.326787 0.151549" />
+	</component>
+	<node id="2">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Plane" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="50 1 5" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3">
+			<attribute name="Model" value="Model;Models/Plane.mdl" />
+			<attribute name="Material" value="Material;Materials/DefaultGrey.xml" />
+		</component>
+	</node>
+	<node id="3">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="20.2453 0.5 -1.57271" />
+		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="4">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-18.2554 0.470484 -1.3801" />
+		<attribute name="Rotation" value="0.966853 0 -0.255333 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="5">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="6">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0.5 0" />
+		<attribute name="Rotation" value="0.999947 0 0.0103017 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="7">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/DefaultGrey.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="17">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light 1" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="0.950232 0.293486 0.076643 -0.0710621" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="17">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="0.65098 1 1 1" />
+			<attribute name="Brightness Multiplier" value="0.500000" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="CSM Splits" value="5 15 30 100" />
+		</component>
+	</node>
+	<node id="49">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light 2" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="0.846336 0.282396 0.425833 -0.150442" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="49">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="1 0.717647 1 1" />
+			<attribute name="Brightness Multiplier" value="0.500000" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="CSM Splits" value="5 20 0 0" />
+		</component>
+	</node>
+	<node id="53">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light 3" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="-0.578434 -0.424722 0.00614453 0.69641" />
+		<attribute name="Scale" value="0.999999 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="53">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="1 1 0.356863 1" />
+			<attribute name="Brightness Multiplier" value="0.500000" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="CSM Splits" value="5 0 0 0" />
+		</component>
+	</node>
+	<node id="79">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light 4" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 0" />
+		<attribute name="Rotation" value="0.233572 0.821552 -0.512103 0.0908127" />
+		<attribute name="Scale" value="0.999999 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="79">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Color" value="0.368627 0.317647 0.356863 1" />
+			<attribute name="Brightness Multiplier" value="0.500000" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="CSM Splits" value="5 0 0 0" />
+		</component>
+	</node>
+</scene>

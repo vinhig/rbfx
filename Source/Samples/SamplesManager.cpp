@@ -299,6 +299,10 @@ void SamplesManager::Start()
     RegisterSample<BakedLighting>();
 #endif
 
+    //startSample_ = "HugeObjectCount";
+    startSample_ = "SceneAndUILoad";
+    //startSample_ = "StaticScene";
+    //startSample_ = "RenderToTexture";
     if (!startSample_.empty())
         StartSample(startSample_);
 }
