@@ -10,7 +10,7 @@
 
 [Doxygen Documentation](https://rbfx.github.io/) is cloned from original project and is not updated (yet?), although it still contains relevant information regarding core functionality of the engine.
 
-Note that **rbfx** is undergoing active developement. Please report all spotted bugs in the [issue tracker](https://github.com/rokups/rbfx/issues).
+Note that **rbfx** is undergoing active development. Please report all spotted bugs in the [issue tracker](https://github.com/rokups/rbfx/issues).
 
 ## License
 

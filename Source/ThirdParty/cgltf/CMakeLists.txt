@@ -1,0 +1,9 @@
+file (GLOB_RECURSE SOURCE_FILES *.h *.cpp)
+
+add_library(cgltf STATIC ${SOURCE_FILES})
+
+target_include_directories(cgltf SYSTEM
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+    PUBLIC    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+              $<INSTALL_INTERFACE:${DEST_THIRDPARTY_HEADERS_DIR}/cgltf>
+)

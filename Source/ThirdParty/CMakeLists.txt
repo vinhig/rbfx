@@ -38,6 +38,7 @@ add_subdirectory(fmt)
 add_subdirectory(spdlog)
 add_subdirectory(SDL)
 add_subdirectory(ETCPACK)
+add_subdirectory(cgltf)
 
 if (NOT MINI_URHO)
     if (URHO3D_TOOLS)

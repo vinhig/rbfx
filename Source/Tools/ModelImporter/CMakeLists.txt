@@ -20,28 +20,7 @@
 # THE SOFTWARE.
 #
 
-if (NOT DESKTOP OR UWP)
-    # Tools are only useful on desktops. We will build win32 tools when targetting UWP.
-    return ()
-endif ()
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${DEST_BIN_DIR_CONFIG})
-
-if (URHO3D_TOOLS OR URHO3D_PACKAGING)
-    add_subdirectory(PackageTool)
-endif ()
-
-if (URHO3D_TOOLS AND NOT MINI_URHO)
-    add_subdirectory(Toolbox)
-    add_subdirectory(AssetImporter)
-    add_subdirectory(ModelImporter)
-    add_subdirectory(AssetViewer)
-    add_subdirectory(OgreImporter)
-    add_subdirectory(RampGenerator)
-    add_subdirectory(SpritePacker)
-    add_subdirectory(Editor)
-    add_subdirectory(ScriptPlayer)
-    add_subdirectory(SerializationConverter)
-endif ()
-
-vs_group_subdirectory_targets(${CMAKE_CURRENT_SOURCE_DIR} Tools)
+file (GLOB SOURCE_FILES *.cpp *.h)
+add_executable (ModelImporter ${SOURCE_FILES})
+target_link_libraries(ModelImporter Urho3D cgltf STB)
+install(TARGETS ModelImporter RUNTIME DESTINATION ${DEST_BIN_DIR_CONFIG})

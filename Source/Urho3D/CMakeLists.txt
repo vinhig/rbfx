@@ -187,6 +187,7 @@ set (THIRD_PARTY_DEPENDENCIES
     xatlas
     embree
     RmlUi
+    cgltf
 )
 
 if (URHO3D_MERGE_STATIC_LIBS)
