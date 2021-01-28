@@ -6,13 +6,6 @@ namespace Urho3D
 class Context;
 }
 
-struct Vertices
-{
-    float position[3];
-    float normal[3];
-    float texCoord[2];
-};
-
 class Importer
 {
 private:
@@ -28,7 +21,7 @@ public:
     bool IsValid() const { return valid; }
     bool ExportMaterials();
     bool ExportScene();
-    bool ExportMeshes();
+    bool ExportModel(const char* out);
     bool ExportTextures();
     bool ExportAnimations();
     bool ExportEverything();

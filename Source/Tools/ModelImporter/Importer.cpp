@@ -7,7 +7,10 @@
 #include <Urho3D/Graphics/Geometry.h>
 #include <Urho3D/Graphics/IndexBuffer.h>
 #include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/ModelView.h>
 #include <Urho3D/Graphics/VertexBuffer.h>
+#include <Urho3D/Resource/XMLArchive.h>
+#include <Urho3D/Resource/XMLFile.h>
 
 using namespace Urho3D;
 
@@ -70,7 +73,7 @@ bool CheckConsistency(cgltf_accessor* accessor, cgltf_type type, int size)
     return accessor->type == type && size == accessor->buffer_view->size;
 }
 
-bool CollectVertices(cgltf_primitive* primitive, Vertices* vertices, int vertices_count)
+bool CollectVertices(cgltf_primitive* primitive, ModelVertex* vertices, int vertices_count)
 {
     for (int k = 0; k < primitive->attributes_count; ++k)
     {
@@ -98,9 +101,7 @@ bool CollectVertices(cgltf_primitive* primitive, Vertices* vertices, int vertice
             cgltf_accessor_unpack_floats(attribute.data, positions, vertices_count * 3);
             for (int l = 0; l < vertices_count; ++l)
             {
-                vertices[l].position[0] = positions[l * 3 + 0];
-                vertices[l].position[1] = positions[l * 3 + 1];
-                vertices[l].position[2] = positions[l * 3 + 2];
+                vertices[l].position_ = Vector4(positions[l * 3 + 0], positions[l * 3 + 1], positions[l * 3 + 2], 1.0);
             }
             break;
         }
@@ -118,9 +119,7 @@ bool CollectVertices(cgltf_primitive* primitive, Vertices* vertices, int vertice
             cgltf_accessor_unpack_floats(attribute.data, normals, vertices_count * 3);
             for (int l = 0; l < vertices_count; ++l)
             {
-                vertices[l].normal[0] = normals[l * 3 + 0];
-                vertices[l].normal[1] = normals[l * 3 + 1];
-                vertices[l].normal[2] = normals[l * 3 + 2];
+                vertices[l].normal_ = Vector4(normals[l * 3 + 0], normals[l * 3 + 1], normals[l * 3 + 2], 1.0);
             }
             break;
         }
@@ -145,8 +144,7 @@ bool CollectVertices(cgltf_primitive* primitive, Vertices* vertices, int vertice
             cgltf_accessor_unpack_floats(attribute.data, texcoords, vertices_count * 2);
             for (int l = 0; l < vertices_count; ++l)
             {
-                vertices[l].texCoord[0] = texcoords[l * 2 + 0];
-                vertices[l].texCoord[1] = texcoords[l * 2 + 1];
+                vertices[l].uv_[0] = Vector4(texcoords[l * 2 + 0], texcoords[l * 2 + 1], 0.0f, 0.0f);
             }
             break;
         }
@@ -156,61 +154,74 @@ bool CollectVertices(cgltf_primitive* primitive, Vertices* vertices, int vertice
     }
 }
 
-bool Importer::ExportMeshes()
+bool Importer::ExportModel(const char* out)
 {
-    auto model = new Model(context);
-    ea::vector<SharedPtr<VertexBuffer>> vertexBuffers;
-    ea::vector<SharedPtr<IndexBuffer>> indexBuffers;
+    auto model = new ModelView(context);
+    ModelVertexFormat format = {};
+    format.position_ = VertexElementType::TYPE_FLOAT;
+    format.normal_ = VertexElementType::TYPE_FLOAT;
+    format.uv_[0] = VertexElementType::TYPE_FLOAT;
+    model->SetVertexFormat(format);
 
-    ea::vector<VertexElement> elements;
-    VertexElement position = {};
-    position.index_ = 0;
-    position.offset_ = 0;
-    position.perInstance_ = true;
-    position.semantic_ = VertexElementSemantic::SEM_POSITION;
-    position.type_ = VertexElementType::TYPE_VECTOR3;
-    elements.push_back(position);
-    VertexElement normal = {};
-    normal.index_ = 1;
-    normal.offset_ = 3 * 4;
-    normal.perInstance_ = true;
-    normal.semantic_ = VertexElementSemantic::SEM_NORMAL;
-    normal.type_ = VertexElementType::TYPE_VECTOR3;
-    elements.push_back(normal);
-    VertexElement texCoord = {};
-    texCoord.index_ = 2;
-    texCoord.offset_ = 3 * 4 * 2;
-    texCoord.perInstance_ = true;
-    texCoord.semantic_ = VertexElementSemantic::SEM_TEXCOORD;
-    texCoord.type_ = VertexElementType::TYPE_VECTOR2;
-    elements.push_back(texCoord);
+    eastl::vector<GeometryView> geometries;
 
     for (int i = 0; i < data->meshes_count; ++i)
     {
         auto mesh = data->meshes[i];
         for (int j = 0; j < mesh.primitives_count; ++j)
         {
-            SharedPtr<VertexBuffer> vertexBuffer(new VertexBuffer(context));
-            SharedPtr<IndexBuffer> indexBuffer(new IndexBuffer(context));
-
             auto primitive = mesh.primitives[j];
 
-            auto vertices_count = primitive.attributes[0].data->count;
-            auto vertices = new Vertices[vertices_count];
-            CollectVertices(&primitive, vertices, vertices_count);
+            GeometryLODView lodView = {};
+            lodView.lodDistance_ = 0.0f;
 
-            vertexBuffer->SetSize(vertices_count, elements);
-            vertexBuffer->SetData((void*)vertices);
-            vertexBuffers.push_back(vertexBuffer);
-            for (int k = 0; k < vertices_count; ++k)
-            { /*
-                 printf("{%f, %f, %f}, {%f, %f, %f}, {%f, %f}\n", vertices[k].position[0], vertices[k].position[1],
-                        vertices[k].position[2], vertices[k].normal[0], vertices[k].normal[1], vertices[k].normal[2],
-                        vertices[k].texCoord[0], vertices[k].texCoord[1]);
-             */
+            // Load vertices for this primitive
+            // Considering there is one vertex buffer and one index buffer per geometry
+            auto vertices_count = primitive.attributes[0].data->count;
+            ea::vector<ModelVertex> vertices;
+            vertices.resize(vertices_count);
+            CollectVertices(&primitive, vertices.data(), vertices_count);
+            printf("Loaded %d vertices.\n", vertices.size());
+
+            lodView.vertices_ = vertices;
+            for (auto& vertex : lodView.vertices_)
+            {
+                printf("P:{%f, %f, %f}\n", vertex.position_.x_, vertex.position_.y_, vertex.position_.z_);
+                printf("N:{%f, %f, %f}\n", vertex.normal_.x_, vertex.normal_.y_, vertex.normal_.z_);
+                printf("T:{%f, %f}\n", vertex.uv_[0].x_, vertex.uv_[0].y_);
             }
+
+            // Load indices
+            auto indices_count = primitive.indices->count;
+            ea::vector<unsigned int> indices;
+            indices.resize(indices_count);
+            for (int k = 0; k < indices_count; ++k)
+            {
+                cgltf_accessor_read_uint(primitive.indices, k, &indices.data()[k], sizeof(unsigned int));
+            }
+
+            printf("Loaded %d indices.\n", vertices.size());
+            for (auto& index : indices)
+            {
+                printf("%d, ", index);
+            }
+            printf("\n");
+            lodView.indices_ = indices;
+
+            GeometryView primView = {};
+            primView.lods_.push_back(lodView);
+
+            geometries.push_back(primView);
         }
     }
+
+    model->SetGeometries(geometries);
+
+    auto m = model->ExportModel();
+
+    printf("Saving to %s.\n", out);
+    return m->SaveFile(eastl::string(out));
+
     // model->SetVertexBuffers(vertexBuffers);
 }
 
@@ -218,12 +229,4 @@ bool Importer::ExportTextures() { return false; }
 
 bool Importer::ExportAnimations() { return false; }
 
-bool Importer::ExportEverything()
-{
-    this->ExportMaterials();
-    this->ExportScene();
-    this->ExportMeshes();
-    this->ExportTextures();
-    this->ExportAnimations();
-    return false;
-}
+bool Importer::ExportEverything() { return false; }

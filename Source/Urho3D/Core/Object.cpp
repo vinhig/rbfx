@@ -28,6 +28,8 @@
 #include "../Core/Profiler.h"
 #include "../IO/Log.h"
 
+#include <cstdio>
+
 #include "../DebugNew.h"
 
 
@@ -133,6 +135,7 @@ void Object::OnEvent(Object* sender, StringHash eventType, VariantMap& eventData
 
 bool Object::Serialize(Archive& /*archive*/)
 {
+    printf("%s\n", GetTypeInfo()->GetTypeName().c_str());
     URHO3D_LOGERROR("Serialization is not supported for " + GetTypeInfo()->GetTypeName());
     assert(0);
     return false;

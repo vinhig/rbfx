@@ -16,7 +16,7 @@ int main(int argc, char const* argv[])
         printf("Something went wrong during import.\n");
         return -1;
     }
-    importer->ExportMeshes();
+    importer->ExportModel("/home/vincent/rbfx-cgltf-test.mdl");
 
     return 0;
 }
