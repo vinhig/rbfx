@@ -16,7 +16,7 @@ int main(int argc, char const* argv[])
         printf("Something went wrong during import.\n");
         return -1;
     }
-    importer->ExportModel("/home/vincent/rbfx-cgltf-test.mdl");
+    importer->ExportMaterials("/home/vincent/gltf-to-mdl/");
 
     return 0;
 }

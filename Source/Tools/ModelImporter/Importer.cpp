@@ -6,11 +6,10 @@
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Graphics/Geometry.h>
 #include <Urho3D/Graphics/IndexBuffer.h>
+#include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/ModelView.h>
-#include <Urho3D/Graphics/VertexBuffer.h>
 #include <Urho3D/Resource/XMLArchive.h>
-#include <Urho3D/Resource/XMLFile.h>
 
 using namespace Urho3D;
 
@@ -44,7 +43,39 @@ Importer::Importer(Urho3D::Context* c, const char* path)
 
 Importer::~Importer() { cgltf_free(data); }
 
-bool Importer::ExportMaterials() { return false; }
+bool Importer::ExportMaterials(const char* folder)
+{
+    for (int i = 0; i < data->materials_count; ++i)
+    {
+        auto material = data->materials[i];
+        SharedPtr<Material> urhoMaterial = SharedPtr(new Material(context));
+
+        // Mirroring parameters from gltf to urho material
+        if (material.double_sided)
+        {
+            urhoMaterial->SetCullMode(CullMode::CULL_NONE);
+        }
+        else
+        {
+            urhoMaterial->SetCullMode(CullMode::CULL_CW);
+        }
+
+        if (material.pbr_metallic_roughness.base_color_texture.texture)
+        {
+            printf("diffuse texture\n");
+        }
+
+        if (material.normal_texture.texture)
+        {
+            printf("material.normal_texture.texture\n");
+        }
+
+        if (material.emissive_texture.texture)
+        {
+        }
+    }
+    return true;
+}
 
 void RecursiveSceneBuild(cgltf_node* nodes, unsigned int childrenCount)
 {
@@ -61,12 +92,12 @@ void RecursiveSceneBuild(cgltf_node* nodes, unsigned int childrenCount)
     }
 }
 
-bool Importer::ExportScene()
+/*bool Importer::ExportScene()
 {
     RecursiveSceneBuild(data->nodes, data->nodes_count);
 
     return false;
-}
+}*/
 
 bool CheckConsistency(cgltf_accessor* accessor, cgltf_type type, int size)
 {
@@ -154,19 +185,18 @@ bool CollectVertices(cgltf_primitive* primitive, ModelVertex* vertices, int vert
     }
 }
 
-bool Importer::ExportModel(const char* out)
+bool Importer::ExportModels(const char* out)
 {
-    auto model = new ModelView(context);
-    ModelVertexFormat format = {};
-    format.position_ = VertexElementType::TYPE_FLOAT;
-    format.normal_ = VertexElementType::TYPE_FLOAT;
-    format.uv_[0] = VertexElementType::TYPE_FLOAT;
-    model->SetVertexFormat(format);
-
-    eastl::vector<GeometryView> geometries;
-
     for (int i = 0; i < data->meshes_count; ++i)
     {
+        auto model = new ModelView(context);
+        ModelVertexFormat format = {};
+        format.position_ = VertexElementType::TYPE_VECTOR3;
+        format.normal_ = VertexElementType::TYPE_VECTOR3;
+        format.uv_[0] = VertexElementType::TYPE_VECTOR2;
+        model->SetVertexFormat(format);
+
+        eastl::vector<GeometryView> geometries;
         auto mesh = data->meshes[i];
         for (int j = 0; j < mesh.primitives_count; ++j)
         {
@@ -213,20 +243,20 @@ bool Importer::ExportModel(const char* out)
 
             geometries.push_back(primView);
         }
+        model->SetGeometries(geometries);
+
+        auto m = model->ExportModel();
+
+        auto vertexBuffers = m->GetVertexBuffers();
+
+        printf("Saving to %s.\n", out);
+        if (mesh.name)
+        {
+            m->SaveFile(eastl::string(out) + mesh.name + ".mdl");
+        }
+        else
+        {
+            m->SaveFile(eastl::string(out) + "no-name-" + i + ".mdl");
+        }
     }
-
-    model->SetGeometries(geometries);
-
-    auto m = model->ExportModel();
-
-    printf("Saving to %s.\n", out);
-    return m->SaveFile(eastl::string(out));
-
-    // model->SetVertexBuffers(vertexBuffers);
 }
-
-bool Importer::ExportTextures() { return false; }
-
-bool Importer::ExportAnimations() { return false; }
-
-bool Importer::ExportEverything() { return false; }

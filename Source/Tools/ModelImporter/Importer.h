@@ -19,10 +19,6 @@ public:
     ~Importer();
 
     bool IsValid() const { return valid; }
-    bool ExportMaterials();
-    bool ExportScene();
-    bool ExportModel(const char* out);
-    bool ExportTextures();
-    bool ExportAnimations();
-    bool ExportEverything();
+    bool ExportMaterials(const char* folder);
+    bool ExportModels(const char* folder);
 };
