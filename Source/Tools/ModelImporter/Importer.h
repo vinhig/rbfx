@@ -1,10 +1,9 @@
 #pragma once
 
 struct cgltf_data;
-namespace Urho3D
-{
-class Context;
-}
+#include <Urho3D/Core/Context.h>
+
+using namespace Urho3D;
 
 class Importer
 {
@@ -12,10 +11,10 @@ private:
     bool valid{false};
 
     cgltf_data* data{nullptr};
-    Urho3D::Context* context{nullptr};
+    Context* context{nullptr};
 
 public:
-    Importer(Urho3D::Context* context, const char* path);
+    Importer(Context* context, const char* path);
     ~Importer();
 
     bool IsValid() const { return valid; }

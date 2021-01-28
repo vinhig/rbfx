@@ -13,7 +13,7 @@
 
 using namespace Urho3D;
 
-Importer::Importer(Urho3D::Context* c, const char* path)
+Importer::Importer(Context* c, const char* path)
     : context(c)
 {
     printf("Loading '%s'\n", path);
